@@ -82,10 +82,10 @@ def findBank(RIC):
         df = pd.DataFrame(result, columns=columns)
     return df
 
-def findByRIC(name):
+def findRICByName(name):
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
     cursor = conn.cursor()
-    query = f"SELECT bank_name ric FROM general_info WHERE LOWER(bank_name) LIKE '%{name.lower()}%'"
+    query = f"SELECT ric, bank_name FROM general_info WHERE LOWER(bank_name) LIKE '%{name.lower()}%'"
     cursor.execute(query)
     return cursor.fetchall()
 
