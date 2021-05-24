@@ -28,14 +28,16 @@ def addBank(RIC, df):
     query = f"SELECT * FROM general_info WHERE ric= '{RIC}';"
     cursor.execute(query)
     if cursor.fetchone() is not None:
-        return 'Такой банк уже есть в базе данных'
-    query = "SELECT * FROM general_info;"
-    cursor.execute(query)
-    result = cursor.fetchall()
+        print('Такой банк уже есть в базе данных')
+    else:
+        query = "SELECT * FROM general_info;"
+        cursor.execute(query)
+        result = cursor.fetchall()
 
-    country_id = give_id(result, 3, df.iloc[0]['country'], 2)[0]
-    query = f"INSERT INTO general_info VALUES('{RIC}', '{df.iloc[0]['bank_name']}', {country_id}, '{df.iloc[0]['country']}');"
-    cursor.execute(query)
+        country_id = give_id(result, 3, df.iloc[0]['country'], 2)[0]
+        query = f"INSERT INTO general_info VALUES('{RIC}', '{df.iloc[0]['bank_name']}', {country_id}, '{df.iloc[0]['country']}');"
+        print(query)
+        cursor.execute(query)
 
     query = "SELECT * FROM currency;"
     cursor.execute(query)
@@ -74,13 +76,20 @@ def findBank(RIC):
         return 'В базе данных нет такого банка'
     else:
         columns = ['total_equity', 'total_assets', 'total_loans', 'interes_income', 'non_interes_income', 'net_income', 'cash_and_due_from_banks', 'year']
-        query  = f"SELECT b.total_equity, b.total_assets, b.net_loans, i.interest_income, i.non_interest_income, i.net_interest_income, b.cash_and_due_from_banks, b.year FROM balance_sheet as b JOIN income_statement as i on b.ric = i.ric WHERE b.ric='{RIC}';"
+        query  = f"SELECT b.total_equity, b.total_assets, b.net_loans, i.interest_income, i.non_interest_income, i.net_interest_income, b.cash_and_due_from_banks, b.year FROM balance_sheet as b JOIN income_statement as i on b.ric = i.ric and b.year = i.year WHERE b.ric='{RIC}';"
         cursor.execute(query)
         result = cursor.fetchall()
         for i in result:
             list(i)
         df = pd.DataFrame(result, columns=columns)
     return df
+
+"""
+def getCurrency(RIC):
+    conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
+    cursor = conn.cursor()
+    query = f"SELECT * FROM general_info WHERE ric='{RIC}';"
+"""
 
 def findRICByName(name):
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
