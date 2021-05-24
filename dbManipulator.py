@@ -89,11 +89,3 @@ def findRICByName(name):
     cursor.execute(query)
     return cursor.fetchall()
 
-
-df = pd.read_csv('result.csv')
-
-#df.rename(columns={'Cash & Due from Banks': 'cash_and_due_from_banks', 'Interest Income, Bank': 'interest_income', 'Non-Interest Income, Bank' : 'non_interest_income', 'Other Earning Assets, Total' : 'other_earning_assets', 'Total Assets':'total_assets', 'Total Deposits':'total_deposits', 'Total Equity':'total_equity', 'Total Interest Expense':'total_interest_expense', 'Net Loans': 'net_loans', 'Net Interest Income': 'net_interest_income'}, inplace=True)
-#check = df.head(1)
-#print(check)
-#print(findByRIC('royal'))
-
