@@ -1,3 +1,5 @@
+CREATE DATABASE guru99;
+
 --
 -- PostgreSQL database dump
 --
