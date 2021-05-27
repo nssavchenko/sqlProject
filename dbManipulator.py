@@ -87,7 +87,6 @@ def getCurrency(RIC):
     query = f"SELECT * FROM general_info WHERE ric='{RIC}';"
 """
 
-
 def findRICByName(name):
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
     cursor = conn.cursor()
