@@ -2,7 +2,7 @@ import psycopg2
 import pandas as pd
 from random import randint
 
-COLUMNS = ['total_equity', 'total_assets', 'net_loans', 'interest_income', 'non_interest_income', 'net_interest_income', 'cash_and_due_from_banks', 'year']
+COLUMNS = ['total_equity', 'total_assets', 'net_loans', 'interest_income', 'non_interest_income', 'net_income', 'cash_and_due_from_banks', 'year']
 
 
 def generate_id(result, position):
@@ -54,7 +54,7 @@ def addBank(RIC, df):
     query = f"INSERT INTO balance_sheet VALUES('{RIC}', {df.iloc[0]['cash_and_due_from_banks']}, {df.iloc[0]['net_loans']}, {df.iloc[0]['other_earning_assets']}, {df.iloc[0]['total_assets']}, {df.iloc[0]['total_deposits']}, {df.iloc[0]['total_equity']}, {df.iloc[0]['year']}, {currency_id[0]});"
     cursor.execute(query)
 
-    query = f"INSERT INTO income_statement VALUES('{RIC}', {df.iloc[0]['interest_income']}, {df.iloc[0]['net_interest_income']}, {df.iloc[0]['non_interest_income']}, {df.iloc[0]['total_interest_expense']}, {df.iloc[0]['year']}, {currency_id[0]});"
+    query = f"INSERT INTO income_statement VALUES('{RIC}', {df.iloc[0]['interest_income']}, {df.iloc[0]['net_income']}, {df.iloc[0]['non_interest_income']}, {df.iloc[0]['total_interest_expense']}, {df.iloc[0]['year']}, {currency_id[0]});"
     cursor.execute(query)
 
     conn.commit()
@@ -72,7 +72,7 @@ def findBank(RIC):
         #cursor.execute(query)
         #column_names = list(cursor.fetchall())
         #query = "SELECT column_name FROM information_schema.columns WHERE table_name = 'balance_sheet';"
-        query  = f"SELECT b.total_equity, b.total_assets, b.net_loans, i.interest_income, i.non_interest_income, i.net_interest_income, b.cash_and_due_from_banks, b.year FROM balance_sheet as b JOIN income_statement as i on b.ric = i.ric AND b.year = i.year WHERE b.ric='{RIC}';"
+        query  = f"SELECT b.total_equity, b.total_assets, b.net_loans, i.interest_income, i.non_interest_income, i.net_income, b.cash_and_due_from_banks, b.year FROM balance_sheet as b JOIN income_statement as i on b.ric = i.ric AND b.year = i.year WHERE b.ric='{RIC}';"
         cursor.execute(query)
         result = cursor.fetchall()
         for i in result:
@@ -110,6 +110,13 @@ def updateBank(RIC, df):
     cursor = conn.cursor()
     query = f"UPDATE balance_sheet SET cash_and_due_from_banks = {df.iloc[0]['cash_and_due_from_banks']}, net_loans = {df.iloc[0]['net_loans']}, other_earning_assets = {df.iloc[0]['other_earning_assets']}, total_assets = {df.iloc[0]['total_assets']}, total_deposits = {df.iloc[0]['total_deposits']}, total_equity = {df.iloc[0]['total_equity']}, year = {df.iloc[0]['year']} WHERE ric = '{RIC}';"
     cursor.execute(query)
-    query = f"UPDATE income_statement SET interest_income = {df.iloc[0]['interest_income']}, net_interest_income = {df.iloc[0]['net_interest_income']}, non_interest_income = {df.iloc[0]['non_interest_income']}, total_interest_expense = {df.iloc[0]['total_interest_expense']}, year = {df.iloc[0]['year']} WHERE ric = '{RIC}';"
+    query = f"UPDATE income_statement SET interest_income = {df.iloc[0]['interest_income']}, net_income = {df.iloc[0]['net_income']}, non_interest_income = {df.iloc[0]['non_interest_income']}, total_interest_expense = {df.iloc[0]['total_interest_expense']}, year = {df.iloc[0]['year']} WHERE ric = '{RIC}';"
+    cursor.execute(query)
+    conn.commit()
+
+def fix();
+    conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
+    cursor = conn.cursor()
+    query = "ALTER TABLE income_statement RENAME COLUMN net_interest_income to net_income;"
     cursor.execute(query)
     conn.commit()
