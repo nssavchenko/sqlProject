@@ -105,5 +105,11 @@ def removeBank(RIC):
     cursor.execute(query)
     conn.commit()
 
-#def updateBank(RIC, df):
-
+def updateBank(RIC, df):
+    conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
+    cursor = conn.cursor()
+    query = f"UPDATE balance_sheet SET cash_and_due_from_banks = {df.iloc[0]['cash_and_due_from_banks']}, net_loans = {df.iloc[0]['net_loans']}, other_earning_assets = {df.iloc[0]['other_earning_assets']}, total_assets = {df.iloc[0]['total_assets']}, total_deposits = {df.iloc[0]['total_deposits']}, total_equity = {df.iloc[0]['total_equity']}, year = {df.iloc[0]['year']} WHERE ric = {RIC};"
+    cursor.execute(query)
+    query = f"UPDATE income_statement SET interest_income = {df.iloc[0]['interest_income']}, net_interest_income = {df.iloc[0]['net_interest_income']}, non_interest_income = {df.iloc[0]['non_interest_income']}, total_interest_expense = {df.iloc[0]['total_interest_expense']}, year = {df.iloc[0]['year']} WHERE ric = {RIC}"
+    cursor.execute(query)
+    conn.commit()
