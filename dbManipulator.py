@@ -141,10 +141,19 @@ def checkCountry(country_name):
     return True
 
 def addCountry(df):
-    #тут надо дф со столбцами 'country_name', 'population', 'gdp', 'external_dept', 'currency_name'
+    #тут надо дф со столбцами 'country_name', 'currency_name'
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
     cursor = conn.cursor()
-    query = f"INSERT INTO countries VALUES('{df.iloc[0]['country_name']}', {df.iloc[0]['population']}, {df.iloc[0]['gdp']}, {df.iloc[0]['external_dept']}, '{df.iloc[0]['currency_name']}');"
+    query = f"INSERT INTO countries VALUES('{df.iloc[0]['country_name']}', '{df.iloc[0]['currency_name']}');"
+    cursor.execute(query)
+    conn.commit()
+    return
+
+def addCountryInfo(df):
+    #тут надо дф со столбцами 'country_name', 'population', 'gdp', 'external_debt', 'year'
+    conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
+    cursor = conn.cursor()
+    query = f"INSERT INTO countries_info VALUES('{df.iloc[0]['country_name']}', {df.iloc[0]['gdp']}, {df.iloc[0]['external_debt']}, {df.iloc[0]['population']}, {df.iloc[0]['year']});"
     cursor.execute(query)
     conn.commit()
     return

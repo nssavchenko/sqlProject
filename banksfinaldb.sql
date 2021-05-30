@@ -43,14 +43,26 @@ ALTER TABLE public.balance_sheet OWNER TO postgres;
 
 CREATE TABLE public.countries (
     country_name text NOT NULL,
-    population integer NOT NULL,
-    gdp integer NOT NULL,
-    external_dept integer NOT NULL,
-    currency_name text
+    currency_name integer
 );
 
 
 ALTER TABLE public.countries OWNER TO postgres;
+
+--
+-- Name: countries_info; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.countries_info (
+    country_name text NOT NULL,
+    gdp integer NOT NULL,
+    external_debt integer NOT NULL,
+    population integer NOT NULL,
+    year integer NOT NULL
+);
+
+
+ALTER TABLE public.countries_info OWNER TO postgres;
 
 --
 -- Name: currency; Type: TABLE; Schema: public; Owner: postgres
@@ -84,6 +96,7 @@ ALTER TABLE public.currency_pairs OWNER TO postgres;
 CREATE TABLE public.general_info (
     ric text NOT NULL,
     bank_name text NOT NULL,
+    country_id integer NOT NULL,
     country_name text NOT NULL
 );
 
@@ -99,6 +112,7 @@ CREATE TABLE public.income_statement (
     interest_income double precision NOT NULL,
     net_income double precision NOT NULL,
     non_interest_income double precision NOT NULL,
+    total_interest_expense double precision NOT NULL,
     year integer NOT NULL,
     currency_id integer NOT NULL
 );
@@ -118,7 +132,15 @@ COPY public.balance_sheet (ric, cash_and_due_from_banks, net_loans, other_earnin
 -- Data for Name: countries; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.countries (country_name, population, gdp, external_dept, currency_name) FROM stdin;
+COPY public.countries (country_name, currency_name) FROM stdin;
+\.
+
+
+--
+-- Data for Name: countries_info; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.countries_info (country_name, gdp, external_debt, population, year) FROM stdin;
 \.
 
 
@@ -140,11 +162,35 @@ COPY public.currency_pairs (currency1_name, currency2_name, currency_price) FROM
 
 
 --
+-- Data for Name: general_info; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.general_info (ric, bank_name, country_id, country_name) FROM stdin;
+\.
+
+
+--
+-- Data for Name: income_statement; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.income_statement (ric, interest_income, net_income, non_interest_income, total_interest_expense, year, currency_id) FROM stdin;
+\.
+
+
+--
 -- Name: balance_sheet balance_sheet_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.balance_sheet
     ADD CONSTRAINT balance_sheet_pkey PRIMARY KEY (ric, year);
+
+
+--
+-- Name: countries_info countries_info_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.countries_info
+    ADD CONSTRAINT countries_info_pkey PRIMARY KEY (country_name, year);
 
 
 --
@@ -201,6 +247,14 @@ ALTER TABLE ONLY public.balance_sheet
 
 ALTER TABLE ONLY public.balance_sheet
     ADD CONSTRAINT balfk2 FOREIGN KEY (currency_id) REFERENCES public.currency(currency_id) MATCH FULL;
+
+
+--
+-- Name: countries_info countries_info_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.countries_info
+    ADD CONSTRAINT countries_info_fkey FOREIGN KEY (country_name) REFERENCES public.countries(country_name) MATCH FULL;
 
 
 --
