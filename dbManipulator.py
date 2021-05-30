@@ -31,14 +31,9 @@ def addBank(RIC, df):
     query = f"SELECT * FROM general_info WHERE ric= '{RIC}';"
     cursor.execute(query)
     if cursor.fetchone() is not None:
-        print('Такой банк уже есть в базе данных')
+        #print('Такой банк уже есть в базе данных')
     else:
-        query = "SELECT * FROM general_info;"
-        cursor.execute(query)
-        result = cursor.fetchall()
-
-        country_id = give_id(result, 3, df.iloc[0]['country'], 2)[0]
-        query = f"INSERT INTO general_info VALUES('{RIC}', '{df.iloc[0]['bank_name']}', {country_id}, '{df.iloc[0]['country']}');"
+        query = f"INSERT INTO general_info VALUES('{RIC}', '{df.iloc[0]['bank_name']}', '{df.iloc[0]['country']}');"
         print(query)
         cursor.execute(query)
 
@@ -104,6 +99,7 @@ def removeBank(RIC):
     query = f"DELETE FROM general_info WHERE ric = '{RIC}';"
     cursor.execute(query)
     conn.commit()
+    return
 
 def updateBank(RIC, df):
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
@@ -113,10 +109,50 @@ def updateBank(RIC, df):
     query = f"UPDATE income_statement SET interest_income = {df.iloc[0]['interest_income']}, net_income = {df.iloc[0]['net_income']}, non_interest_income = {df.iloc[0]['non_interest_income']}, total_interest_expense = {df.iloc[0]['total_interest_expense']}, year = {df.iloc[0]['year']} WHERE ric = '{RIC}';"
     cursor.execute(query)
     conn.commit()
+    return
 
+#Возращает тру если банк есть, фолс иначе то есть тебе нужно сначала эту функцию вызвать, и в зависимосте от ответа делать дальше
+def checkCounty(country_name):
+    conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
+    cursor = conn.cursor()
+    query = f"SELECT country_name FROM countries WHERE country_name = '{country_name}';"
+    cursor.execute(query)
+    ans = cursor.fetchone()
+    if ans is None:
+        return False
+    return True
+
+def addCountry(df):
+    #тут надо дф со столбцами 'country_name', 'population', 'gdp', 'external_dept', 'currency_name'
+    conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
+    cursor = conn.cursor()
+    query = f"INSERT INTO countries VALUES('{df.iloc[0]['country_name']}', {df.iloc[0]['gdp']}, {df.iloc[0]['external_dept']}, {df.iloc[0]['currency_name']});"
+    cursor.execute(query)
+    conn.commit()
+    return
+
+#тут функция смотрит есть ли уже такая пара валют
+#сли есть то она апдейтит цену, если нет то добавлет новую пару и цену
+def addCurrencyPair(df):
+    #тут надо дф со стобцами 'currency1_name', 'currency2_name', 'currency_price'
+    conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
+    cursor = conn.cursor()
+    query = f"SELECT * FROM currency_pairs WHERE currency1_name = '{df.iloc[0]['currency1_name']}' AND currency2_name = '{df.iloc[0]['currency2_name']}';"
+    ans = cursor.fetchone()
+
+    if ans is not None:
+        query = f"UPDATE currency_pairs SET currency_price = {df.iloc[0]['currency_price']} WHERE currency1_name = '{df.iloc[0]['currency1_name']}' AND currency2_name = '{df.iloc[0]['currency2_name']}';"
+    else:
+        query = f"INSERT INTO currency_pairs VALUES('{df.iloc[0]['currency1_name']}', '{df.iloc[0]['currency2_name']}', {df.iloc[0]['currency_price']});"
+    cursor.execute(query)
+    conn.commit()
+    return
+'''
 def fix();
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
     cursor = conn.cursor()
     query = "ALTER TABLE income_statement RENAME COLUMN net_interest_income to net_income;"
     cursor.execute(query)
     conn.commit()
+    return
+'''    
