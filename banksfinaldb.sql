@@ -46,7 +46,7 @@ CREATE TABLE public.countries (
     population integer NOT NULL,
     gdp integer NOT NULL,
     external_dept integer NOT NULL,
-    currency_name integer
+    currency_name text
 );
 
 
@@ -84,7 +84,6 @@ ALTER TABLE public.currency_pairs OWNER TO postgres;
 CREATE TABLE public.general_info (
     ric text NOT NULL,
     bank_name text NOT NULL,
-    country_id integer NOT NULL,
     country_name text NOT NULL
 );
 
@@ -100,7 +99,6 @@ CREATE TABLE public.income_statement (
     interest_income double precision NOT NULL,
     net_income double precision NOT NULL,
     non_interest_income double precision NOT NULL,
-    total_interest_expense double precision NOT NULL,
     year integer NOT NULL,
     currency_id integer NOT NULL
 );
@@ -138,22 +136,6 @@ COPY public.currency (currency_id, currency_name) FROM stdin;
 --
 
 COPY public.currency_pairs (currency1_name, currency2_name, currency_price) FROM stdin;
-\.
-
-
---
--- Data for Name: general_info; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.general_info (ric, bank_name, country_id, country_name) FROM stdin;
-\.
-
-
---
--- Data for Name: income_statement; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.income_statement (ric, interest_income, net_income, non_interest_income, total_interest_expense, year, currency_id) FROM stdin;
 \.
 
 

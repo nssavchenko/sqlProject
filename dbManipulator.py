@@ -32,10 +32,17 @@ def addBank(RIC, df):
     cursor.execute(query)
     if cursor.fetchone() is not None:
         #print('Такой банк уже есть в базе данных')
+        pass
     else:
         query = f"INSERT INTO general_info VALUES('{RIC}', '{df.iloc[0]['bank_name']}', '{df.iloc[0]['country']}');"
         print(query)
         cursor.execute(query)
+    
+    query = f"SELECT * FROM balance_sheet WHERE ric= '{RIC}' AND year = {df.iloc[0]['year']};"
+    cursor.execute(query)
+
+    if cursor.fetchone() is not None:
+        return False
 
     query = "SELECT * FROM currency;"
     cursor.execute(query)
@@ -49,11 +56,11 @@ def addBank(RIC, df):
     query = f"INSERT INTO balance_sheet VALUES('{RIC}', {df.iloc[0]['cash_and_due_from_banks']}, {df.iloc[0]['net_loans']}, {df.iloc[0]['other_earning_assets']}, {df.iloc[0]['total_assets']}, {df.iloc[0]['total_deposits']}, {df.iloc[0]['total_equity']}, {df.iloc[0]['year']}, {currency_id[0]});"
     cursor.execute(query)
 
-    query = f"INSERT INTO income_statement VALUES('{RIC}', {df.iloc[0]['interest_income']}, {df.iloc[0]['net_income']}, {df.iloc[0]['non_interest_income']}, {df.iloc[0]['total_interest_expense']}, {df.iloc[0]['year']}, {currency_id[0]});"
+    query = f"INSERT INTO income_statement VALUES('{RIC}', {df.iloc[0]['interest_income']}, {df.iloc[0]['net_income']}, {df.iloc[0]['non_interest_income']}, {df.iloc[0]['year']}, {currency_id[0]});"
     cursor.execute(query)
 
     conn.commit()
-    return 'Успешно'
+    return True
 
 def findBank(RIC):
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
@@ -82,6 +89,15 @@ def getCurrency(RIC):
     query = f"SELECT * FROM general_info WHERE ric='{RIC}';"
 """
 
+def getGeneral(RIC):
+    conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
+    cursor = conn.cursor()
+    query = f"SELECT ric, bank_name FROM general_info WHERE ric='{RIC}'"
+    cursor.execute(query)
+    return cursor.fetchall()
+
+
+
 def findRICByName(name):
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
     cursor = conn.cursor()
@@ -106,18 +122,20 @@ def updateBank(RIC, df):
     cursor = conn.cursor()
     query = f"UPDATE balance_sheet SET cash_and_due_from_banks = {df.iloc[0]['cash_and_due_from_banks']}, net_loans = {df.iloc[0]['net_loans']}, other_earning_assets = {df.iloc[0]['other_earning_assets']}, total_assets = {df.iloc[0]['total_assets']}, total_deposits = {df.iloc[0]['total_deposits']}, total_equity = {df.iloc[0]['total_equity']}, year = {df.iloc[0]['year']} WHERE ric = '{RIC}';"
     cursor.execute(query)
-    query = f"UPDATE income_statement SET interest_income = {df.iloc[0]['interest_income']}, net_income = {df.iloc[0]['net_income']}, non_interest_income = {df.iloc[0]['non_interest_income']}, total_interest_expense = {df.iloc[0]['total_interest_expense']}, year = {df.iloc[0]['year']} WHERE ric = '{RIC}';"
+    query = f"UPDATE income_statement SET interest_income = {df.iloc[0]['interest_income']}, net_income = {df.iloc[0]['net_income']}, non_interest_income = {df.iloc[0]['non_interest_income']}, year = {df.iloc[0]['year']} WHERE ric = '{RIC}';"
     cursor.execute(query)
     conn.commit()
     return
 
 #Возращает тру если банк есть, фолс иначе то есть тебе нужно сначала эту функцию вызвать, и в зависимосте от ответа делать дальше
-def checkCounty(country_name):
+def checkCountry(country_name):
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
     cursor = conn.cursor()
     query = f"SELECT country_name FROM countries WHERE country_name = '{country_name}';"
+    print(query)
     cursor.execute(query)
     ans = cursor.fetchone()
+    print(ans)
     if ans is None:
         return False
     return True
@@ -126,7 +144,7 @@ def addCountry(df):
     #тут надо дф со столбцами 'country_name', 'population', 'gdp', 'external_dept', 'currency_name'
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
     cursor = conn.cursor()
-    query = f"INSERT INTO countries VALUES('{df.iloc[0]['country_name']}', {df.iloc[0]['gdp']}, {df.iloc[0]['external_dept']}, {df.iloc[0]['currency_name']});"
+    query = f"INSERT INTO countries VALUES('{df.iloc[0]['country_name']}', {df.iloc[0]['population']}, {df.iloc[0]['gdp']}, {df.iloc[0]['external_dept']}, '{df.iloc[0]['currency_name']}');"
     cursor.execute(query)
     conn.commit()
     return
