@@ -2,7 +2,7 @@ import psycopg2
 import pandas as pd
 from random import randint
 
-COLUMNS = ['total_equity', 'total_assets', 'net_loans', 'interest_income', 'non_interest_income', 'net_income', 'cash_and_due_from_banks', 'year']
+COLUMNS = ['total_equity', 'total_assets', 'net_loans', 'interest_income', 'non_interest_income', 'net_income', 'cash_and_due_from_banks', 'year', 'cid']
 
 
 def generate_id(result, position):
@@ -35,7 +35,6 @@ def addBank(RIC, df):
         pass
     else:
         query = f"INSERT INTO general_info VALUES('{RIC}', '{df.iloc[0]['bank_name']}', '{df.iloc[0]['country']}');"
-        print(query)
         cursor.execute(query)
     
     query = f"SELECT * FROM balance_sheet WHERE ric= '{RIC}' AND year = {df.iloc[0]['year']};"
@@ -74,7 +73,7 @@ def findBank(RIC):
         #cursor.execute(query)
         #column_names = list(cursor.fetchall())
         #query = "SELECT column_name FROM information_schema.columns WHERE table_name = 'balance_sheet';"
-        query  = f"SELECT b.total_equity, b.total_assets, b.net_loans, i.interest_income, i.non_interest_income, i.net_income, b.cash_and_due_from_banks, b.year FROM balance_sheet as b JOIN income_statement as i on b.ric = i.ric AND b.year = i.year WHERE b.ric='{RIC}';"
+        query  = f"SELECT b.total_equity, b.total_assets, b.net_loans, i.interest_income, i.non_interest_income, i.net_income, b.cash_and_due_from_banks, b.year, b.currency_id FROM balance_sheet as b JOIN income_statement as i on b.ric = i.ric AND b.year = i.year WHERE b.ric='{RIC}';"
         cursor.execute(query)
         result = cursor.fetchall()
         for i in result:
@@ -92,10 +91,16 @@ def getCurrency(RIC):
 def getGeneral(RIC):
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
     cursor = conn.cursor()
-    query = f"SELECT ric, bank_name FROM general_info WHERE ric='{RIC}'"
+    query = f"SELECT ric, bank_name, country_name FROM general_info WHERE ric='{RIC}'"
     cursor.execute(query)
     return cursor.fetchall()
 
+def getCurrency(cid):
+    conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
+    cursor = conn.cursor()
+    query = f"SELECT currency_name FROM currency WHERE currency_id='{cid}'"
+    cursor.execute(query)
+    return cursor.fetchall()
 
 
 def findRICByName(name):
@@ -132,13 +137,20 @@ def checkCountry(country_name):
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
     cursor = conn.cursor()
     query = f"SELECT country_name FROM countries WHERE country_name = '{country_name}';"
-    print(query)
     cursor.execute(query)
     ans = cursor.fetchone()
-    print(ans)
     if ans is None:
         return False
     return True
+
+def getCountryInfo(country_name):
+    conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
+    cursor = conn.cursor()
+    query = f"SELECT * FROM countries_info WHERE country_name = '{country_name}';"
+    print(query)
+    cursor.execute(query)
+    ans = cursor.fetchall()
+    return ans
 
 def addCountry(df):
     #тут надо дф со столбцами 'country_name', 'currency_name'
@@ -154,6 +166,7 @@ def addCountryInfo(df):
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
     cursor = conn.cursor()
     query = f"INSERT INTO countries_info VALUES('{df.iloc[0]['country_name']}', {df.iloc[0]['gdp']}, {df.iloc[0]['external_debt']}, {df.iloc[0]['population']}, {df.iloc[0]['year']});"
+    print(query)
     cursor.execute(query)
     conn.commit()
     return
@@ -165,6 +178,7 @@ def addCurrencyPair(df):
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
     cursor = conn.cursor()
     query = f"SELECT * FROM currency_pairs WHERE currency1_name = '{df.iloc[0]['currency1_name']}' AND currency2_name = '{df.iloc[0]['currency2_name']}';"
+    cursor.execute(query)
     ans = cursor.fetchone()
 
     if ans is not None:
@@ -174,6 +188,15 @@ def addCurrencyPair(df):
     cursor.execute(query)
     conn.commit()
     return
+
+def getCurrencyPair(cur1, cur2):
+    conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
+    cursor = conn.cursor()
+    query = f"SELECT * FROM currency_pairs WHERE currency1_name = '{cur1}' AND currency2_name = '{cur2}';"
+    cursor.execute(query)
+    ans = cursor.fetchone()
+    return ans
+
 '''
 def fix();
     conn = psycopg2.connect(dbname='banks', user='postgres', password='ybrbnf00', host='localhost')
